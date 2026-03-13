@@ -7,17 +7,39 @@
     <title>Pro Tuner Ultimate</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <!-- Progressive Web App (PWA) configuration -->
+    <!-- PWA configuration -->
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     <script>
-      // Register the service worker for offline support and caching.  This code
-      // mirrors the registration logic from the previous version of the app.
+      // Register the service worker and force updates at the earliest opportunity.
+      // When a new service worker is installed, this script reloads the page so
+      // that the latest assets are served and old caches are purged.
       if ('serviceWorker' in navigator) {
+        let refreshing;
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-            .then(() => console.log('Service Worker registered successfully'))
-            .catch(err => console.log('Service Worker registration failed:', err));
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            // Optionally, force an immediate update check on page load
+            if (registration.update) registration.update();
+            // Listen for updates to the service worker
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // A new service worker has been installed and the old one is controlling
+                  // the page; reload to activate the new service worker and get fresh data.
+                  window.location.reload();
+                }
+              });
+            });
+          }).catch(err => {
+            console.error('Service worker registration failed:', err);
+          });
+          // Reload the page when the controlling service worker changes
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            refreshing = true;
+            window.location.reload();
+          });
         });
       }
     </script>
