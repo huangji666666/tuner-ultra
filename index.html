@@ -7,6 +7,20 @@
     <title>Pro Tuner Ultimate</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Progressive Web App (PWA) configuration -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <script>
+      // Register the service worker for offline support and caching.  This code
+      // mirrors the registration logic from the previous version of the app.
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(() => console.log('Service Worker registered successfully'))
+            .catch(err => console.log('Service Worker registration failed:', err));
+        });
+      }
+    </script>
     <style>
 /* ============================================================
    CSS变量 & 主题系统（仅 light / dark 双主题）
